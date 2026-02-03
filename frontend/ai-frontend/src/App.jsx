@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
-
 function App() {
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
@@ -16,23 +14,19 @@ function App() {
     setReply("");
 
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
+        throw new Error("Chat failed");
       }
 
       const data = await res.json();
       setReply(data.reply);
     } catch (err) {
-      console.error(err);
       setError("Chat failed. Please try again.");
     } finally {
       setLoading(false);
@@ -42,7 +36,7 @@ function App() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1 style={styles.heading}>AI Code Review Dashboard</h1>
+        <h1 style={styles.title}>AI Code Review Dashboard</h1>
 
         <textarea
           style={styles.textarea}
@@ -67,35 +61,38 @@ const styles = {
     minHeight: "100vh",
     background: "linear-gradient(135deg, #020617, #020617)",
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "Inter, system-ui",
   },
   card: {
+    width: "800px",
+    maxWidth: "90%",
     background: "#020617",
     borderRadius: "14px",
     padding: "30px",
-    width: "700px",
-    color: "#fff",
-    boxShadow: "0 0 40px rgba(0,0,0,0.5)",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
   },
-  heading: {
+  title: {
     textAlign: "center",
+    color: "white",
     marginBottom: "20px",
   },
   textarea: {
     width: "100%",
-    minHeight: "140px",
-    padding: "12px",
+    minHeight: "160px",
     background: "#020617",
-    color: "#fff",
+    color: "white",
     border: "1px solid #1e293b",
-    borderRadius: "8px",
+    borderRadius: "10px",
+    padding: "14px",
+    fontSize: "15px",
   },
   button: {
     marginTop: "15px",
-    padding: "10px 20px",
+    padding: "10px 18px",
     background: "#2563eb",
-    color: "#fff",
+    color: "white",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
@@ -103,13 +100,14 @@ const styles = {
   reply: {
     marginTop: "20px",
     background: "#020617",
+    color: "#e5e7eb",
     padding: "15px",
-    borderRadius: "8px",
+    borderRadius: "10px",
     whiteSpace: "pre-wrap",
   },
   error: {
-    marginTop: "10px",
     color: "#ef4444",
+    marginTop: "10px",
   },
 };
 
