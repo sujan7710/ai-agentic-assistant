@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
 function App() {
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
@@ -14,7 +16,7 @@ function App() {
     setReply("");
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -38,41 +40,43 @@ function App() {
   };
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>AI Code Review Dashboard</h1>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h1 style={styles.heading}>AI Code Review Dashboard</h1>
 
-      <textarea
-        style={styles.textarea}
-        placeholder="Ask something..."
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
+        <textarea
+          style={styles.textarea}
+          placeholder="Ask something..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
 
-      <button style={styles.button} onClick={sendMessage} disabled={loading}>
-        {loading ? "Thinking..." : "Ask AI"}
-      </button>
+        <button style={styles.button} onClick={sendMessage} disabled={loading}>
+          {loading ? "Thinking..." : "Ask AI"}
+        </button>
 
-      {reply && (
-        <div style={styles.replyBox}>
-          <strong>AI Reply:</strong>
-          <p>{reply}</p>
-        </div>
-      )}
-
-      {error && <p style={styles.error}>{error}</p>}
+        {reply && <pre style={styles.reply}>{reply}</pre>}
+        {error && <p style={styles.error}>{error}</p>}
+      </div>
     </div>
   );
 }
 
 const styles = {
-  container: {
-    maxWidth: "800px",
-    margin: "60px auto",
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #020617, #020617)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  card: {
+    background: "#020617",
+    borderRadius: "14px",
     padding: "30px",
-    fontFamily: "Arial, sans-serif",
-    background: "#0b1220",
+    width: "700px",
     color: "#fff",
-    borderRadius: "12px",
+    boxShadow: "0 0 40px rgba(0,0,0,0.5)",
   },
   heading: {
     textAlign: "center",
@@ -80,34 +84,32 @@ const styles = {
   },
   textarea: {
     width: "100%",
-    height: "150px",
+    minHeight: "140px",
     padding: "12px",
-    fontSize: "16px",
-    background: "#111827",
+    background: "#020617",
     color: "#fff",
-    border: "1px solid #374151",
+    border: "1px solid #1e293b",
     borderRadius: "8px",
   },
   button: {
-    marginTop: "12px",
+    marginTop: "15px",
     padding: "10px 20px",
-    fontSize: "16px",
-    cursor: "pointer",
     background: "#2563eb",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
-  },
-  replyBox: {
-    marginTop: "20px",
-    padding: "15px",
-    background: "#020617",
     borderRadius: "8px",
-    border: "1px solid #1e293b",
+    cursor: "pointer",
+  },
+  reply: {
+    marginTop: "20px",
+    background: "#020617",
+    padding: "15px",
+    borderRadius: "8px",
+    whiteSpace: "pre-wrap",
   },
   error: {
     marginTop: "10px",
-    color: "#f87171",
+    color: "#ef4444",
   },
 };
 
