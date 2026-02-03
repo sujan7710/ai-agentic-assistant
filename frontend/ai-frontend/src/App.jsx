@@ -1,104 +1,114 @@
 import { useState } from "react";
-import { chatWithAI, fullCodeReview, uploadFilesForAnalysis } from "./api";
 
-export default function App() {
-  const [tab, setTab] = useState("chat");
+function App() {
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
-  const [repoUrl, setRepoUrl] = useState("");
-  const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChat = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await chatWithAI(message);
-      setReply(res.data.reply);
-    } catch {
-      setError("Chat failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const sendMessage = async () => {
+    if (!message.trim()) return;
 
-  const handleRepoReview = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await fullCodeReview(repoUrl);
-      setReply(res.data.full_code_review);
-    } catch {
-      setError("GitHub analysis failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLoading(true);
+    setError("");
+    setReply("");
 
-  const handleFileUpload = async () => {
     try {
-      setLoading(true);
-      setError("");
-      const res = await uploadFilesForAnalysis(files);
-      setReply(res.data.analysis);
-    } catch {
-      setError("File analysis failed");
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      }
+
+      const data = await res.json();
+      setReply(data.reply);
+    } catch (err) {
+      console.error(err);
+      setError("Chat failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", fontFamily: "Arial" }}>
-      <h1>AI Code Review Dashboard</h1>
+    <div style={styles.container}>
+      <h1 style={styles.heading}>AI Code Review Dashboard</h1>
 
-      <div style={{ marginBottom: 20 }}>
-        <button onClick={() => setTab("chat")}>Chat</button>
-        <button onClick={() => setTab("github")}>GitHub Review</button>
-        <button onClick={() => setTab("files")}>File Upload</button>
-      </div>
+      <textarea
+        style={styles.textarea}
+        placeholder="Ask something..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
 
-      {tab === "chat" && (
-        <>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Ask something..."
-            style={{ width: "100%", height: 100 }}
-          />
-          <button onClick={handleChat}>Send</button>
-        </>
-      )}
+      <button style={styles.button} onClick={sendMessage} disabled={loading}>
+        {loading ? "Thinking..." : "Ask AI"}
+      </button>
 
-      {tab === "github" && (
-        <>
-          <input
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            placeholder="GitHub repo URL"
-            style={{ width: "100%" }}
-          />
-          <button onClick={handleRepoReview}>Analyze</button>
-        </>
-      )}
-
-      {tab === "files" && (
-        <>
-          <input
-            type="file"
-            multiple
-            onChange={(e) => setFiles(e.target.files)}
-          />
-          <button onClick={handleFileUpload}>Upload</button>
-        </>
-      )}
-
-      {loading && <p>Processing...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
       {reply && (
-        <pre style={{ background: "#f4f4f4", padding: 20 }}>{reply}</pre>
+        <div style={styles.replyBox}>
+          <strong>AI Reply:</strong>
+          <p>{reply}</p>
+        </div>
       )}
+
+      {error && <p style={styles.error}>{error}</p>}
     </div>
   );
 }
+
+const styles = {
+  container: {
+    maxWidth: "800px",
+    margin: "60px auto",
+    padding: "30px",
+    fontFamily: "Arial, sans-serif",
+    background: "#0b1220",
+    color: "#fff",
+    borderRadius: "12px",
+  },
+  heading: {
+    textAlign: "center",
+    marginBottom: "20px",
+  },
+  textarea: {
+    width: "100%",
+    height: "150px",
+    padding: "12px",
+    fontSize: "16px",
+    background: "#111827",
+    color: "#fff",
+    border: "1px solid #374151",
+    borderRadius: "8px",
+  },
+  button: {
+    marginTop: "12px",
+    padding: "10px 20px",
+    fontSize: "16px",
+    cursor: "pointer",
+    background: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+  },
+  replyBox: {
+    marginTop: "20px",
+    padding: "15px",
+    background: "#020617",
+    borderRadius: "8px",
+    border: "1px solid #1e293b",
+  },
+  error: {
+    marginTop: "10px",
+    color: "#f87171",
+  },
+};
+
+export default App;
