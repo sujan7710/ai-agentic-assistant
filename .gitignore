@@ -1,0 +1,16 @@
+# Node
+node_modules
+dist
+.env
+.env.*
+
+# Python
+__pycache__
+*.pyc
+*.log
+
+# Docker
+*.tar
+
+# OS
+.DS_Store
