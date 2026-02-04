@@ -1,17 +1,17 @@
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
-OLLAMA_URL = os.getenv("OLLAMA_URL")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
-AI_TIMEOUT = int(os.getenv("AI_TIMEOUT"))
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
-RATE_LIMIT = int(os.getenv("RATE_LIMIT"))
-RATE_WINDOW = int(os.getenv("RATE_WINDOW"))
+AI_TIMEOUT = int(os.getenv("AI_TIMEOUT", "60"))
 
-MAX_HISTORY_MESSAGES = int(os.getenv("MAX_HISTORY_MESSAGES"))
-MAX_CODE_CHARS = int(os.getenv("MAX_CODE_CHARS"))
-MAX_PROMPT_CHARS = int(os.getenv("MAX_PROMPT_CHARS"))
+RATE_LIMIT = int(os.getenv("RATE_LIMIT", "30"))
+RATE_WINDOW = int(os.getenv("RATE_WINDOW", "60"))
 
-ENVIRONMENT = os.getenv("ENVIRONMENT")
+MAX_HISTORY_MESSAGES = int(os.getenv("MAX_HISTORY_MESSAGES", "10"))
+MAX_PROMPT_CHARS = int(os.getenv("MAX_PROMPT_CHARS", "8000"))
+
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is missing")
