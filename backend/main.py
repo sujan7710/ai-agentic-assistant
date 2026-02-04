@@ -46,25 +46,33 @@ def chat(req: ChatRequest):
     }
 
     payload = {
-        "model": MODEL,
+        "model": "llama3-70b-8192",
         "messages": [
-            {"role": "system", "content": "You are a helpful senior software engineer."},
-            {"role": "user", "content": req.message}
-        ],
-        "temperature": 0.5
+            {
+                "role": "user",
+                "content": req.message.strip()
+            }
+        ]
     }
 
     try:
         response = requests.post(
-            GROQ_URL,
+            "https://api.groq.com/openai/v1/chat/completions",
             headers=headers,
             json=payload,
             timeout=60
         )
-        response.raise_for_status()
-        data = response.json()
-        reply = data["choices"][0]["message"]["content"]
-        return {"reply": reply}
 
-    except requests.exceptions.RequestException as e:
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=503,
+                detail=response.text
+            )
+
+        data = response.json()
+        return {
+            "reply": data["choices"][0]["message"]["content"]
+        }
+
+    except Exception as e:
         raise HTTPException(status_code=503, detail=str(e))
