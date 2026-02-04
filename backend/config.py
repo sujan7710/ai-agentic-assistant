@@ -5,7 +5,7 @@ load_dotenv()
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = os.getenv("GROQ_API_KEY")
 
 AI_TIMEOUT = int(os.getenv("AI_TIMEOUT", 60))
 

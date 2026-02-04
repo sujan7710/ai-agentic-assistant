@@ -5,65 +5,66 @@ import requests
 import os
 import time
 
-# ================= CONFIG =================
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
-AI_TIMEOUT = int(os.getenv("AI_TIMEOUT", "60"))
-
-GEMINI_URL = (
-    f"https://generativelanguage.googleapis.com/v1/models/"
-    f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-)
-
-# ================= APP =================
-app = FastAPI(title="AI Agentic Backend")
+# ---------------- APP ----------------
+app = FastAPI(title="AI Agentic Backend (Groq)")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "https://ai-agentic-frontend.onrender.com",
-        "https://ai-agentic-frontend1.onrender.com",
+        "https://ai-agentic-frontend1.onrender.com"
     ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ================= MODELS =================
+# ---------------- CONFIG ----------------
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+MODEL = "llama3-70b-8192"
+
+# ---------------- MODELS ----------------
 class ChatRequest(BaseModel):
     message: str
 
-# ================= HEALTH =================
+# ---------------- HEALTH ----------------
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-# ================= GEMINI CALL =================
-def call_gemini(prompt: str) -> str:
+# ---------------- CHAT ----------------
+@app.post("/chat")
+def chat(req: ChatRequest):
+    if not GROQ_API_KEY:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY missing")
+
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
     payload = {
-        "contents": [
-            {
-                "parts": [{"text": prompt}]
-            }
-        ]
+        "model": MODEL,
+        "messages": [
+            {"role": "system", "content": "You are a helpful senior software engineer."},
+            {"role": "user", "content": req.message}
+        ],
+        "temperature": 0.5
     }
 
     try:
         response = requests.post(
-            GEMINI_URL,
+            GROQ_URL,
+            headers=headers,
             json=payload,
-            timeout=AI_TIMEOUT
+            timeout=60
         )
         response.raise_for_status()
-
         data = response.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+        reply = data["choices"][0]["message"]["content"]
+        return {"reply": reply}
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=503, detail=str(e))
-
-# ================= CHAT =================
-@app.post("/chat")
-def chat(req: ChatRequest):
-    reply = call_gemini(req.message)
-    return {"reply": reply}
