@@ -23,7 +23,7 @@ app.add_middleware(
 # ---------------- CONFIG ----------------
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama3-70b-8192"
+MODEL = "llama3-8b-8192"
 
 # ---------------- MODELS ----------------
 class ChatRequest(BaseModel):
@@ -46,7 +46,7 @@ def chat(req: ChatRequest):
     }
 
     payload = {
-        "model": "llama3-70b-8192",
+        "model": "llama3-8b-8192",
         "messages": [
             {
                 "role": "user",
