@@ -60,8 +60,11 @@ The goal was **not to build a ChatGPT clone**, but to:
 ---
 
 ## 📷 Screenshots
+![DASHBOARD](Screenshot 2026-02-09 230247.png)
+
 
 ---
 
 ## 📄 License
 MIT
+
