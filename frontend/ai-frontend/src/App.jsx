@@ -3,10 +3,15 @@ import { useState, useRef, useEffect } from "react";
 const API_BASE = "https://ai-agentic-backend1.onrender.com";
 
 export default function App() {
+  const [tab, setTab] = useState("chat");
+
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [repoUrl, setRepoUrl] = useState("");
+  const [files, setFiles] = useState([]);
 
   const replyRef = useRef(null);
 
@@ -16,9 +21,8 @@ export default function App() {
     }
   }, [reply]);
 
-  const sendMessage = async () => {
-    if (!message.trim()) return;
-
+  // ---------- CORE SEND ----------
+  const sendPrompt = async (prompt) => {
     setLoading(true);
     setError("");
     setReply("");
@@ -27,14 +31,13 @@ export default function App() {
       const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message: prompt }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail);
 
       setReply(data.reply);
-      setMessage("");
     } catch {
       setError("Request failed");
     } finally {
@@ -42,17 +45,67 @@ export default function App() {
     }
   };
 
+  // ---------- CHAT ----------
+  const handleChat = () => {
+    if (!message.trim()) return;
+    sendPrompt(message);
+    setMessage("");
+  };
+
+  // ---------- GITHUB ANALYSIS ----------
+  const handleRepoAnalysis = () => {
+    if (!repoUrl.trim()) return;
+
+    const prompt = `
+You are a senior software engineer.
+
+Analyze the following GitHub repository:
+${repoUrl}
+
+Explain:
+1. Overall architecture
+2. Code quality
+3. Possible bugs or risks
+4. Improvements
+5. Best practices followed
+
+Keep it clear and structured.
+    `;
+    sendPrompt(prompt);
+  };
+
+  // ---------- FILE ANALYSIS ----------
+  const handleFileAnalysis = async () => {
+    if (!files.length) return;
+
+    let content = "";
+    for (let file of files) {
+      content += `\n\n===== FILE: ${file.name} =====\n`;
+      content += await file.text();
+    }
+
+    const prompt = `
+You are a senior software engineer.
+
+Analyze the following code files:
+${content}
+
+Explain:
+- What the code does
+- Important logic
+- Issues or bugs
+- Improvements
+- Best practices
+    `;
+    sendPrompt(prompt);
+  };
+
+  // ---------- ENTER KEY ----------
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleChat();
     }
-  };
-
-  const clearChat = () => {
-    setMessage("");
-    setReply("");
-    setError("");
   };
 
   return (
@@ -60,31 +113,58 @@ export default function App() {
       <div style={styles.card}>
         <h1>AI Code Review Dashboard</h1>
 
-        <textarea
-          style={styles.textarea}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ask anything (Enter to send, Shift+Enter for new line)"
-        />
-
-        <div style={styles.actions}>
-          <button onClick={sendMessage} disabled={loading}>
-            {loading ? "Thinking..." : "Ask AI"}
-          </button>
-          <button onClick={clearChat} style={styles.secondary}>
-            Clear
-          </button>
+        {/* Tabs */}
+        <div style={styles.tabs}>
+          <button onClick={() => setTab("chat")}>Chat</button>
+          <button onClick={() => setTab("repo")}>GitHub Repo</button>
+          <button onClick={() => setTab("files")}>File Analysis</button>
         </div>
 
-        {loading && <p style={styles.thinking}>🤖 AI is thinking…</p>}
+        {/* CHAT */}
+        {tab === "chat" && (
+          <>
+            <textarea
+              style={styles.textarea}
+              placeholder="Ask anything (Enter to send, Shift+Enter for new line)"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+            <button onClick={handleChat}>Ask AI</button>
+          </>
+        )}
 
+        {/* GITHUB */}
+        {tab === "repo" && (
+          <>
+            <input
+              style={styles.input}
+              placeholder="Paste GitHub repository URL"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+            />
+            <button onClick={handleRepoAnalysis}>Analyze Repository</button>
+          </>
+        )}
+
+        {/* FILES */}
+        {tab === "files" && (
+          <>
+            <input
+              type="file"
+              multiple
+              onChange={(e) => setFiles(e.target.files)}
+            />
+            <button onClick={handleFileAnalysis}>Analyze Files</button>
+          </>
+        )}
+
+        {loading && <p style={styles.thinking}>🤖 AI is thinking…</p>}
         {reply && (
-          <pre style={styles.reply} ref={replyRef}>
+          <pre ref={replyRef} style={styles.reply}>
             {reply}
           </pre>
         )}
-
         {error && <p style={styles.error}>{error}</p>}
       </div>
     </div>
@@ -101,12 +181,16 @@ const styles = {
     color: "white",
   },
   card: {
-    width: "800px",
+    width: "850px",
     background: "#020617",
     padding: "30px",
     borderRadius: "14px",
     boxShadow: "0 25px 50px rgba(0,0,0,0.6)",
-    animation: "fadeIn 0.4s ease",
+  },
+  tabs: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "15px",
   },
   textarea: {
     width: "100%",
@@ -115,13 +199,11 @@ const styles = {
     padding: "10px",
     borderRadius: "8px",
   },
-  actions: {
-    display: "flex",
-    gap: "10px",
-  },
-  secondary: {
-    background: "#1e293b",
-    color: "white",
+  input: {
+    width: "100%",
+    padding: "10px",
+    marginBottom: "12px",
+    borderRadius: "8px",
   },
   thinking: {
     marginTop: "10px",
@@ -134,7 +216,6 @@ const styles = {
     marginTop: "15px",
     whiteSpace: "pre-wrap",
     borderRadius: "10px",
-    animation: "slideUp 0.3s ease",
   },
   error: {
     color: "red",
