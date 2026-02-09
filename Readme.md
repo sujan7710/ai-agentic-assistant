@@ -58,9 +58,25 @@ The goal was **not to build a ChatGPT clone**, but to:
 - Building deployable, scalable systems
 
 ---
+## 📸 Screenshots
+
+### 🧠 AI Agent Dashboard
+![AI Agent Dashboard](./Screenshot%202026-02-09%20230247.png)
+
+### 💬 Code Review Chat
+![Code Review Chat](./Screenshot%202026-02-09%20231018.png)
+
+### 🔍 GitHub Repository Analysis
+![GitHub Repository Analysis](./Screenshot%202026-02-09%20231425.png)
+
+### 📂 File Analysis
+![File Analysis](./Screenshot%202026-02-09%20231446.png)
+
+---
 
 ## 📄 License
 MIT
+
 
 
 
