@@ -59,18 +59,8 @@ The goal was **not to build a ChatGPT clone**, but to:
 
 ---
 
-## 📷 Screenshots
-
-![Dashboard](./Screenshot%202026-02-09%20230247.png)
-![CODE REVIEW CHAT](./Screenshot%202026-02-09%20231018.png)
-![GITHUB REPOSITORY ANALYSIS](./Screenshot%202026-02-09%20231425.png)
-![FILE ANALYSIS](./Screenshot%202026-02-09%20231446.png)
-
-
-
----
-
 ## 📄 License
 MIT
+
 
 
